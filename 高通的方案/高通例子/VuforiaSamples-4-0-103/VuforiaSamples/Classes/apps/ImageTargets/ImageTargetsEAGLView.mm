@@ -23,7 +23,6 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
 #import "SampleApplicationShaderUtils.h"
 #import "Teapot.h"
 
-
 //******************************************************************************
 // *** OpenGL ES thread safety ***
 //
@@ -48,6 +47,8 @@ namespace {
 
     // Teapot texture filenames
     const char* textureFilenames[] = {
+        "vv.png",
+        "xiezi.png",
         "TextureTeapotBrass.png",
         "TextureTeapotBlue.png",
         "TextureTeapotRed.png",
@@ -56,7 +57,8 @@ namespace {
     
     // Model scale factor
     const float kObjectScaleNormal = 3.0f;
-    const float kObjectScaleOffTargetTracking = 12.0f;
+    //模型放大的比例
+    const float kObjectScaleOffTargetTracking = 150.0f;
 }
 
 
@@ -109,8 +111,7 @@ namespace {
             [EAGLContext setCurrentContext:context];
         }
         
-        // Generate the OpenGL ES texture and upload the texture data for use
-        // when rendering the augmentation
+       //加载纹理
         for (int i = 0; i < NUM_AUGMENTATION_TEXTURES; ++i) {
             GLuint textureID;
             glGenTextures(1, &textureID);
@@ -177,7 +178,8 @@ namespace {
 
 - (void) loadBuildingsModel {
     buildingModel = [[SampleApplication3DModel alloc] initWithTxtResourceName:@"buildings"];
-    [buildingModel read];
+    //[buildingModel read];
+    
 }
 
 
@@ -194,6 +196,7 @@ namespace {
 {
     [self setFramebuffer];
     
+    offTargetTrackingEnabled=YES;
     // Clear colour and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -212,13 +215,17 @@ namespace {
     }
     glCullFace(GL_BACK);
     if(QCAR::Renderer::getInstance().getVideoBackgroundConfig().mReflection == QCAR::VIDEO_BACKGROUND_REFLECTION_ON)
-        glFrontFace(GL_CW);  //Front camera
+        //调用前置摄像头
+        glFrontFace(GL_CW);
     else
-        glFrontFace(GL_CCW);   //Back camera
-    
-    
+    {
+        //调用后置摄像头
+        glFrontFace(GL_CCW);
+    }
+
     for (int i = 0; i < state.getNumTrackableResults(); ++i) {
-        // Get the trackable
+        
+        // Get the trackable 
         const QCAR::TrackableResult* result = state.getTrackableResult(i);
         const QCAR::Trackable& trackable = result->getTrackable();
 
@@ -229,8 +236,13 @@ namespace {
         QCAR::Matrix44F modelViewProjection;
         
         if (offTargetTrackingEnabled) {
+            //旋转
             SampleApplicationUtils::rotatePoseMatrix(90, 1, 0, 0,&modelViewMatrix.data[0]);
+            //设置模型放大的比例
             SampleApplicationUtils::scalePoseMatrix(kObjectScaleOffTargetTracking, kObjectScaleOffTargetTracking, kObjectScaleOffTargetTracking, &modelViewMatrix.data[0]);
+            //平移
+            //SampleApplicationUtils::translatePoseMatrix(0.0f, 0.0f, kObjectScaleNormal, &modelViewMatrix.data[0]);
+
         } else {
             SampleApplicationUtils::translatePoseMatrix(0.0f, 0.0f, kObjectScaleNormal, &modelViewMatrix.data[0]);
             SampleApplicationUtils::scalePoseMatrix(kObjectScaleNormal, kObjectScaleNormal, kObjectScaleNormal, &modelViewMatrix.data[0]);
@@ -239,7 +251,7 @@ namespace {
         SampleApplicationUtils::multiplyMatrix(&vapp.projectionMatrix.data[0], &modelViewMatrix.data[0], &modelViewProjection.data[0]);
         
         glUseProgram(shaderProgramID);
-        
+#pragma 处理模型加载数据 包括顶点坐标、法线、纹理
         if (offTargetTrackingEnabled) {
             glVertexAttribPointer(vertexHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)buildingModel.vertices);
             glVertexAttribPointer(normalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)buildingModel.normals);
@@ -249,22 +261,22 @@ namespace {
             glVertexAttribPointer(normalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)teapotNormals);
             glVertexAttribPointer(textureCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)teapotTexCoords);
         }
-        
+
         glEnableVertexAttribArray(vertexHandle);
         glEnableVertexAttribArray(normalHandle);
         glEnableVertexAttribArray(textureCoordHandle);
-        
+#pragma mark 选择xml标识
         // Choose the texture based on the target name
         int targetIndex = 0; // "stones"
-        if (!strcmp(trackable.getName(), "chips"))
+        if (!strcmp(trackable.getName(), "cc"))
             targetIndex = 1;
-        else if (!strcmp(trackable.getName(), "tarmac"))
+        else if (!strcmp(trackable.getName(), "xx"))
             targetIndex = 2;
         
         glActiveTexture(GL_TEXTURE0);
-        
+#pragma mark 加载纹理
         if (offTargetTrackingEnabled) {
-            glBindTexture(GL_TEXTURE_2D, augmentationTexture[3].textureID);
+            glBindTexture(GL_TEXTURE_2D, augmentationTexture[0].textureID);
         } else {
             glBindTexture(GL_TEXTURE_2D, augmentationTexture[targetIndex].textureID);
         }
@@ -272,6 +284,7 @@ namespace {
         glUniform1i(texSampler2DHandle, 0 /*GL_TEXTURE0*/);
         
         if (offTargetTrackingEnabled) {
+#pragma mark 数字大小
             glDrawArrays(GL_TRIANGLES, 0, buildingModel.numVertices);
         } else {
             glDrawElements(GL_TRIANGLES, NUM_TEAPOT_OBJECT_INDEX, GL_UNSIGNED_SHORT, (const GLvoid*)teapotIndices);

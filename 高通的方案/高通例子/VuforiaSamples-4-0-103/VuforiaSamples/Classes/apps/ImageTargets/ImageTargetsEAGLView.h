@@ -15,7 +15,7 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
 #import "SampleGLResourceHandler.h"
 
 
-#define NUM_AUGMENTATION_TEXTURES 4
+#define NUM_AUGMENTATION_TEXTURES 5
 
 
 // EAGLView is a subclass of UIView and conforms to the informal protocol

@@ -126,7 +126,7 @@ namespace {
 // (Performed on a background thread)
 - (void)initQCARInBackground
 {
-    // Background thread must have its own autorelease pool 呵呵
+    // Background thread must have its own autorelease pool
     @autoreleasepool {
         QCAR::setInitParameters(mQCARInitFlags,"33a32261b4dd45e9afa12d2a4723bb46");
         

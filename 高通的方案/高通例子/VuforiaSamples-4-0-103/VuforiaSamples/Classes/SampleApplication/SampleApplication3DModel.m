@@ -8,7 +8,9 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
 
 
 #import "SampleApplication3DModel.h"
-
+#import "dynames.h"
+#import "xz.h"
+#define XZorDYNAMES 1
 @implementation SampleApplication3DModel
 
 - (id)initWithTxtResourceName:(NSString *) name
@@ -31,19 +33,42 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
 }
 
 - (int) numVertices {
-    return m_nbVertices;
+
+    if(XZorDYNAMES){
+    return dynamesNumVerts;
+        
+    }else{
+        return xzNumVerts;
+
+    }
 }
 
 - (float *)vertices {
-    return m_vertices;
+    if(XZorDYNAMES){
+        return dynamesVerts;
+        
+    }else{
+        return xzVerts;
+    }
+
 }
 
 - (float *)normals {
-    return m_normals;
+    if(XZorDYNAMES){
+        return dynamesNormals;
+        
+    }else{
+        return xzNormals;
+    }
 }
 
 - (float *)texCoords {
-    return m_textcoords;
+    if(XZorDYNAMES){
+        return dynamesTexCoords;
+        
+    }else{
+        return xzTexCoords;
+    }
 }
 
 
@@ -70,27 +95,34 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
             nbItems = atoi(&buffer[1]);
             index  = 0;
             
+            
             switch(state) {
                 case 1:
+                    //数据数量
                     m_nbVertices = nbItems / 3;
+                    //顶点坐标
                     m_vertices = malloc( nbItems * sizeof(float));
                     data = m_vertices;
                     break;
                 case 2:
+                    //法线坐标
                     m_normals = malloc( nbItems * sizeof(float));
                     data = m_normals;
                     break;
                 case 3:
+                    //纹理
                     m_textcoords = malloc( nbItems * sizeof(float));
                     data = m_textcoords;
                     break;
             }
         } else {
+            
             if (index >= nbItems) {
                 // check that we don't get too many data
                 NSLog(@"buffer overflow!");
             } else {
                 data[index++] = atof(buffer);
+                
             }
         }
     }

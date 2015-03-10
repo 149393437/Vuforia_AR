@@ -197,7 +197,10 @@ and other countries. Trademarks of QUALCOMM Incorporated are used with permissio
 }
 
 - (bool) doLoadTrackersData {
-    dataSetStonesAndChips = [self loadObjectTrackerDataSet:@"StonesAndChips.xml"];
+    //加载特征码
+    dataSetStonesAndChips = [self loadObjectTrackerDataSet:@"zhangcheng.xml"];
+    
+    
     dataSetTarmac = [self loadObjectTrackerDataSet:@"Tarmac.xml"];
     if ((dataSetStonesAndChips == NULL) || (dataSetTarmac == NULL)) {
         NSLog(@"Failed to load datasets");
